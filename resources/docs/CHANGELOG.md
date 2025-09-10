@@ -11,6 +11,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Updated `assets/release-badge.svg` to reflect latest release state (visual metadata refresh).
 
+### Fixed (0.1.2)
+
+- Update the Release Body in the `release-auto` workflow to correctly extract and format the changelog section for the new version.
+
 ### Internal (0.1.2)
 
 - No functional code changes; maintenance/update of release badge only.
