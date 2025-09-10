@@ -5,9 +5,6 @@ on:
   push:
     tags:
       - 'v*.*.*'
-  # Permite disparo explícito desde repository-dispatch enviado por bump-version
-  repository_dispatch:
-    types: [version-bumped]
 
 jobs:
   build-python:
@@ -59,16 +56,11 @@ jobs:
         with:
           fetch-depth: 0
           token: ${{ secrets.RELEASE_PAT }}
-      - name: Extract version (tag or dispatch payload)
+      - name: Extract version from tag
         id: version
         run: |
-          if [[ "${{ github.event_name }}" == "repository_dispatch" ]]; then
-            VERSION="${{ github.event.client_payload.version }}"
-            TAG="${{ github.event.client_payload.tag }}"
-          else
-            VERSION=${GITHUB_REF#refs/tags/v}
-            TAG=${GITHUB_REF#refs/tags/}
-          fi
+          VERSION=${GITHUB_REF#refs/tags/v}
+          TAG=${GITHUB_REF#refs/tags/}
           echo "version=$VERSION" >> $GITHUB_OUTPUT
           echo "tag=$TAG" >> $GITHUB_OUTPUT
       - name: Download Python artifacts

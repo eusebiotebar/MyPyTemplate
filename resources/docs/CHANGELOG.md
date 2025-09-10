@@ -5,6 +5,24 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.1.1] - 2025-09-10
+
+### Changed (0.1.1)
+
+- Simplified release automation: removed duplicate dispatch/bridge workflows to avoid multiple release runs.
+- Fixed PyInstaller build to produce single-file Windows executable (`MyPyTemplate.exe`).
+- Corrected tagging flow to trigger release only once per version tag.
+
+### Fixed (0.1.1)
+
+- Missing `fi` in workflow causing syntax error in tag verification step.
+- Incorrect `--add-data` syntax for PyInstaller on Windows.
+- Badge generation step indentation and version extraction issues.
+
+### Internal (0.1.1)
+
+- Adopted PAT usage pattern (RELEASE_PAT) reserved for future enabling; current workflow expects existing PAT for tag push.
+
 ## [0.1.0] - 2025-09-10
 
 ### Added (0.1.0)
