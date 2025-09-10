@@ -22,9 +22,18 @@ Crear un la estructura de directorio similar a la siguiente, asegurándote de in
 │   ├── config/
 │   │   ├── .gitattributes
 │   │   ├── .gitignore
+├── core/
+│   ├── .gitkeep
+│   ├── __init__.py
+│   ├── gui.py
+│   ├── main.py
+│   ├── utils.py
+│   ├── version.py
+│   ├── version.txt
 ├── hooks/
 │   ├── .gitkeep
 │   ├── create_git_tag_from_changelog.py
+│   ├── update_version_from_changelog.py
 ├── resources/
 │   ├── docs/
 │   │   ├── CHANGELOG.md
@@ -39,12 +48,7 @@ Crear un la estructura de directorio similar a la siguiente, asegurándote de in
 │   ├── .gitkeep
 │   ├── requirements.txt
 │   ├── version_info.txt
-├── setup.py
 ├── logs/
-├── tests/
-│   ├── .gitkeep
-│   ├── conftest.py
-│   ├── test_main.py
 ├── scripts/
 │   ├── .gitkeep
 │   ├── build.sh
@@ -53,14 +57,10 @@ Crear un la estructura de directorio similar a la siguiente, asegurándote de in
 │   ├── install.ps1
 │   ├── test.sh
 │   ├── test.ps1
-├── core/
+├── tests/
 │   ├── .gitkeep
-│   ├── __init__.py
-│   ├── gui.py
-│   ├── main.py
-│   ├── utils.py
-│   ├── version.py
-│   ├── version.txt
+│   ├── conftest.py
+│   ├── test_main.py
 ├── ProjectName.spec
 ├── ProjectName.py
 │   pyproject.toml
