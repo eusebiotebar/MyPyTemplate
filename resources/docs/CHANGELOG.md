@@ -11,7 +11,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Initial project scaffolding with modern Python packaging (`pyproject.toml`)
 - Console command `MyPyTemplate`
-- **Windows executable (.exe) generation with PyInstaller**
+- Windows executable (.exe) generation with PyInstaller
 - Complete CI/CD pipeline with GitHub Actions (lint, test, build, deploy)
 - Multi-platform release builds (Python packages + Windows executable)
 - Code quality tools: Ruff, Black, Mypy, Pytest
