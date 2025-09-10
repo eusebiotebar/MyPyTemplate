@@ -4,7 +4,6 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "MyPyTemplate"
-version = "0.0.0"
 # Using dynamic version loaded from version file for single source of truth
 dynamic = ["version"]
 description = "Python template project with modern packaging, CI/CD, and Windows executable generation."
