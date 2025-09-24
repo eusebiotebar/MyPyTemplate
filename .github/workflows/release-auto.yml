@@ -39,12 +39,18 @@ jobs:
           pip install pyinstaller
       - name: Build Windows executable
         run: |
-          pyinstaller --onefile --name MyPyTemplate --add-data "core/version_info.txt;core" MyPyTemplate_cli.py
+          pyinstaller MyPyTemplate.spec --clean --noconfirm
+      - name: Get version for executable name
+        id: version
+        run: |
+          $version = Get-Content core/version_info.txt | Select-Object -First 1
+          $version = $version.Trim()
+          echo "version=$version" >> $env:GITHUB_OUTPUT
       - name: Upload Windows executable
         uses: actions/upload-artifact@v4
         with:
           name: windows-exe
-          path: dist/MyPyTemplate.exe
+          path: dist/MyPyTemplate-*.exe
 
   release:
     needs: [build-python, build-windows]
@@ -56,6 +62,9 @@ jobs:
         with:
           fetch-depth: 0
           token: ${{ secrets.RELEASE_PAT }}
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12.6'
       - name: Extract version from tag
         id: version
         run: |
@@ -67,11 +76,53 @@ jobs:
         id: changelog
         run: |
           ver="${{ steps.version.outputs.version }}"
-          # Extrae líneas entre el encabezado de la versión y el siguiente encabezado de versión
+          # Extrae l�neas entre el encabezado de la versi�n y el siguiente encabezado de versi�n
           awk -v ver="$ver" 'BEGIN{flag=0} /^## \[/ { if(flag){ exit } if($0 ~ "\\["ver"\\]"){ flag=1; next } } flag { print }' resources/docs/CHANGELOG.md > section.md
           echo "section<<EOF" >> $GITHUB_OUTPUT
           cat section.md >> $GITHUB_OUTPUT
           echo EOF >> $GITHUB_OUTPUT
+      - name: Prepare release metadata (author/date)
+        id: relmeta
+        run: |
+          AUTHOR="${{ github.actor }}"
+          DATE_ISO=$(git log -1 --format=%aI ${{ steps.version.outputs.tag }} || git log -1 --format=%aI)
+          # Convert to YYYY-MM-DD; fallback to today if conversion fails
+          DATE=$(date -u -d "$DATE_ISO" +%Y-%m-%d 2>/dev/null || date -u +%Y-%m-%d)
+          echo "author=$AUTHOR" >> $GITHUB_OUTPUT
+          echo "date=$DATE" >> $GITHUB_OUTPUT
+      - name: Install system dependencies for PyQt6 (headless)
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends \
+            libegl1 \
+            libgl1 \
+            libxkbcommon-x11-0
+      - name: Install Python dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -e .[dev]
+          pip install pytest-json-report
+      - name: Generate SRVP Test Report (with release metadata)
+        env:
+          RELEASE_AUTHOR: ${{ steps.relmeta.outputs.author }}
+          RELEASE_DATE: ${{ steps.relmeta.outputs.date }}
+          QT_QPA_PLATFORM: offscreen
+        run: |
+          python scripts/update_srvp.py
+      - name: Commit and push SRVP Test Report
+        run: |
+          git config --local user.email "github-actions@users.noreply.github.com"
+          git config --local user.name "github-actions"
+          
+          if [[ -f resources/docs/srvp_TR.md ]]; then
+            git add resources/docs/srvp_TR.md
+            if git diff --cached --quiet; then
+              echo "No changes to SRVP Test Report"
+            else
+              git commit -m "docs(srvp): update test report for ${{ steps.version.outputs.tag }}"
+              git push origin HEAD:main
+            fi
+          fi
       - name: Download Python artifacts
         uses: actions/download-artifact@v4
         with:
@@ -84,7 +135,7 @@ jobs:
           path: dist/
       - name: Generate release badge
         run: |
-          mkdir -p assets
+          mkdir -p resources/assets
           VERSION="${{ steps.version.outputs.version }}"
           TAG="${{ steps.version.outputs.tag }}"
           
@@ -94,7 +145,7 @@ jobs:
           VERSION_X=$((825 + (VERSION_LENGTH - 5) * 35))
           
           # Create release badge SVG
-          cat > assets/release-badge.svg << EOF
+          cat > resources/assets/release-badge.svg << EOF
           <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="$BADGE_WIDTH" height="20">
             <linearGradient id="b" x2="0" y2="100%">
               <stop offset="0" stop-color="#bbb" stop-opacity=".1"/>
@@ -124,8 +175,8 @@ jobs:
           git config --local user.email "github-actions@users.noreply.github.com"
           git config --local user.name "github-actions"
           
-          if [[ -f assets/release-badge.svg ]]; then
-            git add assets/release-badge.svg
+          if [[ -f resources/assets/release-badge.svg ]]; then
+            git add resources/assets/release-badge.svg
             if git diff --cached --quiet; then
               echo "No changes to badge"
             else
@@ -137,7 +188,9 @@ jobs:
         uses: softprops/action-gh-release@v2
         with:
             generate_release_notes: false
-            files: dist/*
+            files: |
+              dist/*
+              resources/docs/srvp_TR.md
             body: |
               Release v${{ steps.version.outputs.version }}
               Please check the [CHANGELOG.md](https://github.com/${{ github.repository }}/blob/${{ steps.version.outputs.tag }}/resources/docs/CHANGELOG.md) for full details about this release.

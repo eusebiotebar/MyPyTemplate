@@ -11,12 +11,16 @@ readme = "README.md"
 license = "Apache-2.0"
 authors = [ { name = "Your Name", email = "you@example.com" } ]
 requires-python = ">=3.10"
-dependencies = []
+dependencies = [
+  "PyQt6>=6.7.0",
+  "python-can>=4.3.1",
+  # Optional but recommended on Windows to provide epoch-based timestamps for some drivers
+  "uptime; platform_system == 'Windows'",
+]
 
 [project.optional-dependencies]
 dev = [
   "pytest",
-  "black",
   "mypy",
   "ruff",
   "pyinstaller"
@@ -29,12 +33,11 @@ MyPyTemplate = "core.main:main"
 packages = { find = { where = ["."], exclude = ["tests", "resources", "scripts", "hooks"] } }
 include-package-data = true
 
+[tool.setuptools.package-data]
+core = ["*.ui"]
 [tool.setuptools.dynamic]
 version = { file = "core/version_info.txt" }
 
-[tool.black]
-line-length = 100
-target-version = ["py310", "py311", "py312"]
 
 [tool.ruff]
 line-length = 100
